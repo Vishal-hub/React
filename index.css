@@ -51,4 +51,47 @@
     height: 200px;
     object-fit: cover;
 }
+.shimmer-container{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    justify-content: center;
+}
+.shimmer-card{
+    border: 2px solid #000000;
+    border-radius: 8px;
+    width: 300px;
+    height: 400px;
+    overflow: hidden;
+    background-color: #eee;
+    padding: 5px;
+    transition: transform 0.3s ease; 
+    position: relative; 
+    overflow: hidden;
+}
 
+/* The pseudo-element creates the shimmer effect */
+.shimmer-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(255, 255, 255, 1) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%); /* Start off-screen to the left */
+    animation: shimmer 1.5s infinite;
+}
+
+/* The @keyframes for the shimmering effect remains the same */
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%); /* Move across to the right */
+    }
+}
