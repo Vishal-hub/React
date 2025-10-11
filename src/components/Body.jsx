@@ -5,7 +5,10 @@ import Shimmer from "../components/shimmer";
 
 const Body = () => {
 
-    let [listOfRestaurants, setListOfRestaurants] = useState([]);
+    const [listOfRestaurants, setListOfRestaurants] = useState([]);
+    const [allRestaurants, setAllRestaurants] = useState([]);
+    const [isFiltered, setIsFiltered] = useState(false);
+    const [searchText, setSearchText] = useState("");
 
     useEffect(() => {
         fetchData();
@@ -20,7 +23,10 @@ const Body = () => {
         const json = await data.json();
         
         //optional chaining(?.)
-        setListOfRestaurants(json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants); 
+        const restaurants=json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
+        
+        setAllRestaurants(restaurants);
+        setListOfRestaurants(restaurants);
     }
 
     //Shimmer UI
@@ -28,19 +34,42 @@ const Body = () => {
     //     return <Shimmer /> ;
     // }
 
+    const handleToggle = () => {
+        if(isFiltered){
+            setListOfRestaurants(allRestaurants);
+        }else{
+            const filteredList = allRestaurants.filter(
+                (restaurant) => restaurant.info.avgRating >= 4.5
+            );
+            setListOfRestaurants(filteredList);
+        }
+        setIsFiltered(!isFiltered);
+    };
+
+
     return (
         <div className="body">
             <div className="upbar">
-                <div className="search"><input type="text" className="search-bar" placeholder="Search for restaurants"/></div>
+                <div className="search">
+
+                    <input type="text" className="search-bar" 
+                        value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+
+                    <button className="search-button" onClick={() => {
+                        console.log(searchText);
+                        const searchedRestaurants = allRestaurants.filter(
+                            (restaurant) => restaurant.info.name.toLowerCase().includes(searchText.toLowerCase())
+                        );
+                        setListOfRestaurants(searchedRestaurants);
+                    }}>
+                        Search
+                    </button>
+
+                </div>
                 <div className="filter">
                     <button className="toprestaurant" 
-                        onClick={() => {
-                            const filteredList = listOfRestaurants.filter(
-                                (restaurant) => restaurant.info.avgRating >= 4.5
-                            );
-                            setListOfRestaurants(filteredList);
-                    }}>
-                        Top Rated Restaurant
+                        onClick={handleToggle}>
+                        {isFiltered ? "Show All Restaurants" : "Top Rated Restaurant"}
                     </button>
                 </div>
             </div>
