@@ -1,88 +1,87 @@
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import RestaurantCard from "./RestaurantCard";
-import resList from "../utils/MockData";
-import { useEffect, useState } from "react";
 import Shimmer from "../components/shimmer";
+import useCustomHook from "../utils/CustomHook.jsx";
+import useOnline from "./useOnline.jsx";
 
 const Body = () => {
-
     const [listOfRestaurants, setListOfRestaurants] = useState([]);
     const [allRestaurants, setAllRestaurants] = useState([]);
-    const [isFiltered, setIsFiltered] = useState(false);
     const [searchText, setSearchText] = useState("");
+    const [hasSearched, setHasSearched] = useState(false); // New state to track if a search was performed
+
+    const restaurants = useCustomHook();
 
     useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
-        //install CORS extention in browser to avoid CORS error
-        const data = await fetch(
-            "https://www.swiggy.com/dapi/restaurants/list/v5?lat=12.9966135&lng=77.5920581&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING"
-        );
-        
-        const json = await data.json();
-        
-        //optional chaining(?.)
-        const restaurants=json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
-        
-        setAllRestaurants(restaurants);
         setListOfRestaurants(restaurants);
-    }
+        setAllRestaurants(restaurants);
+    }, [restaurants]);
 
-    //Shimmer UI
-    // if(listOfRestaurants.length === 0){
-    //     return <Shimmer /> ;
-    // }
-
-    const handleToggle = () => {
-        if(isFiltered){
-            setListOfRestaurants(allRestaurants);
-        }else{
-            const filteredList = allRestaurants.filter(
-                (restaurant) => restaurant.info.avgRating >= 4.5
-            );
-            setListOfRestaurants(filteredList);
-        }
-        setIsFiltered(!isFiltered);
+    const handleSearch = () => {
+        setHasSearched(true); // Set to true when the search button is clicked
+        const searchedRestaurants = allRestaurants.filter(
+            (restaurant) => restaurant.brand_name.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setListOfRestaurants(searchedRestaurants);
     };
 
+    const status = useOnline();
+
+    if (status === false) {
+        return (
+            <h1>Looks like you are Offline! Please check your Internet</h1>
+        );
+    }
+
+    // Determine what to render based on the component's state
+    const renderContent = () => {
+        // Condition 1: Initial load or data hasn't arrived yet
+        if (!restaurants.length) {
+            return <Shimmer />;
+        }
+        // Condition 2: Search was performed and yielded no results
+        if (hasSearched && listOfRestaurants.length === 0) {
+            return (
+                <div className="no-results-found text-center mt-8">
+                    <h1 className="text-2xl text-gray-600">No restaurants found.</h1>
+                    <p className="text-gray-500">Try searching for a different restaurant.</p>
+                </div>
+            );
+        }
+        // Condition 3: Display the list of restaurants (initial or filtered)
+        return (
+            <div className="restaurant-list">
+                {listOfRestaurants.map((restaurant) => (
+                    <Link to={`brand/${restaurant.brand_id}`} key={restaurant.brand_id}>
+                        <RestaurantCard resData={restaurant} />
+                    </Link>
+                ))}
+            </div>
+        );
+    };
 
     return (
         <div className="body">
-            <div className="upbar">
-                <div className="search">
-
-                    <input type="text" className="search-bar" 
-                        value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-
-                    <button className="search-button" onClick={() => {
-                        console.log(searchText);
-                        const searchedRestaurants = allRestaurants.filter(
-                            (restaurant) => restaurant.info.name.toLowerCase().includes(searchText.toLowerCase())
-                        );
-                        setListOfRestaurants(searchedRestaurants);
-                    }}>
+            <div className="upbar bg-white shadow-sm p-4 rounded-lg">
+                <div className="search flex items-center justify-center space-x-2 w-full max-w-lg mx-auto">
+                    <input
+                        type="text"
+                        className="search-bar w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        placeholder="Search for restaurants"
+                    />
+                    <button
+                        className="search-button px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                        onClick={handleSearch}
+                    >
                         Search
-                    </button>
-
-                </div>
-                <div className="filter">
-                    <button className="toprestaurant" 
-                        onClick={handleToggle}>
-                        {isFiltered ? "Show All Restaurants" : "Top Rated Restaurant"}
                     </button>
                 </div>
             </div>
-            {listOfRestaurants.length === 0 ? <Shimmer /> : null} {/* Conditional Rendering for Shimmer UI */}
             <div className="restaurant-container">
-                <div className="restaurant-list">
-                    {
-                        listOfRestaurants.map((restaurant) => (
-                            <RestaurantCard key={restaurant.info.id} resData={restaurant.info} />
-                        ))
-                    }
-                    {/* <RestaurantCard resData={resList[0]?.info} /> */}
-                </div>
+                {renderContent()}
             </div>
         </div>
     );
