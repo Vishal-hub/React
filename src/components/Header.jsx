@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { LOGO_IMG } from "../utils/constant";
 import useOnline from "./useOnline";
+import { useContext } from "react";
+import UserContext from "../utils/UserContext";
 
 const Header = () => {
 
   const status = useOnline();
+
+  const {loggedInUser} = useContext(UserContext);
   
   return (
     <div className="flex items-center justify-between bg-gray-100 p-4 shadow-md">
@@ -40,6 +44,7 @@ const Header = () => {
           <Link to="/cart">
             <li className="text-gray-600 hover:text-gray-900 transition-colors duration-200">Cart</li>
           </Link>
+           <li className="text-gray-600 hover:text-gray-900 transition-colors duration-200">{loggedInUser}</li>
         </ul>
       </nav>
     </div>

@@ -4,12 +4,25 @@ const RestaurantMenuCard = ({ resData }) => {
   const { product_name, small_description, price, rating, product_imageUrl } = resData;
 
   return (
-    <div className="restaurant-card">
-      <img className="restaurant-image" src={product_imageUrl} alt={product_name} />
-      <h2>{product_name}</h2>
-      <p>{small_description}</p>
-      <h3>Price: ₹{price}</h3>
-      <h3>Rating: {rating}</h3>
+    <div className="p-2 m-2 border-b-2 border-gray-200 text-left flex" >
+      <div className="w-9/12">
+        <div className="py-2 flex justify-between items-center">
+          <div>
+            <span className="text-bold">{product_name}</span>
+            <span> - ₹{price} </span>
+          </div>
+          <span className="mr-[7px]">⭐{rating}</span>
+        </div>
+        <p className="text-xs m-revert-layer">{small_description}</p>
+      </div>
+      <div className="w-3/12 p-4">
+        <div className="absolute">
+          <button className="mx-18 my-17 py-[3px] px-[5px] rounded-lg bg-black text-white shadow-lg">
+            Add+
+          </button>
+          </div>
+        <img src={product_imageUrl} alt={product_name} />
+      </div>
     </div>
   );
 };
@@ -23,8 +36,8 @@ export const VegLabel = (RestaurantMenuCard) => {
         <div
           style={{
             position: "absolute",
-            top: "8px",
-            left: "8px",
+            top: "10px",
+            left: "555px",
             display: "flex",
             gap: "8px",           // space between labels
             zIndex: 10,
@@ -34,8 +47,9 @@ export const VegLabel = (RestaurantMenuCard) => {
             style={{
               backgroundColor: "green",
               color: "white",
-              padding: "4px 8px",
+              padding: "2px 4px",
               borderRadius: "8px",
+              transform: "translateY(-15px)",
             }}
           >
             Veg
@@ -46,7 +60,9 @@ export const VegLabel = (RestaurantMenuCard) => {
                 backgroundColor: "goldenrod",
                 color: "white",
                 padding: "4px 8px",
+                borderRadius: "8px",padding: "2px 4px",
                 borderRadius: "8px",
+                transform: "translateY(-15px)",
               }}
             >
               Top Rated

@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import RestaurantCard from "./RestaurantCard";
 import Shimmer from "../components/shimmer";
 import useCustomHook from "../utils/CustomHook.jsx";
 import useOnline from "./useOnline.jsx";
+import UserContext from "../utils/UserContext.jsx";
 
 const Body = () => {
     const [listOfRestaurants, setListOfRestaurants] = useState([]);
     const [allRestaurants, setAllRestaurants] = useState([]);
     const [searchText, setSearchText] = useState("");
     const [hasSearched, setHasSearched] = useState(false); // New state to track if a search was performed
+
+    const {loggedInUser, setUsername} = useContext(UserContext);
 
     const restaurants = useCustomHook();
 
@@ -24,6 +27,15 @@ const Body = () => {
             (restaurant) => restaurant.brand_name.toLowerCase().includes(searchText.toLowerCase())
         );
         setListOfRestaurants(searchedRestaurants);
+        console.log(listOfRestaurants);
+    };
+
+    const handleKeyDown = (e) => {
+        // Check if the key pressed is "Enter"
+        if (e.key === "Enter") {
+            // Call the search function
+            handleSearch();
+        }
     };
 
     const status = useOnline();
@@ -52,11 +64,11 @@ const Body = () => {
         // Condition 3: Display the list of restaurants (initial or filtered)
         return (
             <div className="restaurant-list">
-                {listOfRestaurants.map((restaurant) => (
-                    <Link to={`brand/${restaurant.brand_id}`} key={restaurant.brand_id}>
+                {listOfRestaurants.map((restaurant) =>
+                    <Link to={`brand/${restaurant.brand_id}/${restaurant.client_source_id}`} key={restaurant.brand_id}>
                         <RestaurantCard resData={restaurant} />
                     </Link>
-                ))}
+                )}
             </div>
         );
     };
@@ -64,12 +76,13 @@ const Body = () => {
     return (
         <div className="body">
             <div className="upbar bg-white shadow-sm p-4 rounded-lg">
-                <div className="search flex items-center justify-center space-x-2 w-full max-w-lg mx-auto">
+                <div className="search flex items-center justify-center space-x-2 w-full max-w-lg ml-auto mr-0">
                     <input
                         type="text"
                         className="search-bar w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="Search for restaurants"
                     />
                     <button
@@ -79,6 +92,13 @@ const Body = () => {
                         Search
                     </button>
                 </div>
+                    <input
+                        type="text"
+                        className="search-bar w-28 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ml-auto mr-0"
+                        value={loggedInUser || ""}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                
             </div>
             <div className="restaurant-container">
                 {renderContent()}
